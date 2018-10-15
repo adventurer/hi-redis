@@ -1,0 +1,160 @@
+<script src="http://echarts.baidu.com/dist/echarts.min.js"></script>
+
+<div class="row">
+    <div class="col-12">
+        <div id="main" style="height:400px;"></div>
+    </div>
+</div>
+<!-- <div id="main" style="width: 600px;height:400px;"></div> -->
+
+<script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    // 指定图表的配置项和数据
+    var option = {
+        title: {
+            text: ''
+        },
+        tooltip : {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#6a7985'
+                }
+            }
+        },
+        legend: {
+            data:['流量out','流量in']
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis : [
+            {
+                type : 'category',
+                boundaryGap : false,
+                data : ['周一','周二','周三','周四','周五','周六','周日','周一','周二','周三','周四','周五','周六','周日']
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value',
+                axisLabel: {
+                    formatter: '{value} kbps'
+                },
+            }
+        ],
+        series : [
+            
+            {
+                name:'流量out',
+                type:'line',
+                stack: '总量',
+                areaStyle: {},
+                data:[-120, -132, -101, -134, -90, -230, -210,-120, -132, -101, -134, -90, -230, -210]
+            },
+            {
+                name:'流量in',
+                type:'line',
+                stack: '总量',
+                areaStyle: {},
+                data:[120, 132, 101, 134, 90, 230, 210,12000, 132, 101, 134, 90, 230, 210]
+            }
+        ]
+    };
+
+
+    // 使用刚指定的配置项和数据显示图表。
+    var time = new Date();
+    var time_data = []
+    var in_data = []
+    var out_data = []
+    for (index = 0; index < 30; index++) {
+        time_data[index] = time.getMinutes().toString()+":"+time.getSeconds().toString()
+        in_data[index] = 0
+        out_data[index] = 0
+        
+    }
+    option.xAxis = [{
+            type : 'category',
+            boundaryGap : false,
+            data:time_data
+        }]
+    option.series=[
+            {
+                name:'流量in',
+                type:'line',
+                stack: '总量',
+                areaStyle: {},
+                data:in_data
+            },
+            {
+                name:'流量out',
+                type:'line',
+                stack: '总量',
+                areaStyle: {},
+                data:out_data
+            }
+    ]
+    myChart.setOption(option);
+
+function run(time,flow_in,flow_out) {
+    time_data.shift()
+    time_data.push(time)
+    in_data.shift()
+    in_data.push(-flow_in)
+    out_data.shift()
+    out_data.push(flow_out)
+}
+
+conn = new WebSocket("ws://" + document.location.host + "/echo");
+conn.onclose = function (evt) {
+    console.log("close")
+};
+conn.onmessage = function (evt) {
+    json = evt.data.toString()
+    // console.log(json)
+    data = JSON.parse(json)
+    // console.log(data)
+    data = jQuery.parseJSON(data)
+    // console.log(data.parseJSON())
+
+    var time = new Date();
+
+    now = time.getMinutes().toString()+":"+time.getSeconds().toString()
+    run(now,data.Stats.instantaneous_input_kbps,data.Stats.instantaneous_output_kbps)
+    option.xAxis = [{
+            type : 'category',
+            boundaryGap : false,
+            data:time_data
+        }]
+    option.series=[
+            {
+                name:'流量in',
+                type:'line',
+                stack: '总量',
+                areaStyle: {},
+                data:in_data
+            },
+            {
+                name:'流量out',
+                type:'line',
+                stack: '总量',
+                areaStyle: {},
+                data:out_data
+            }
+    ]
+    myChart.setOption(option);
+    
+};
+</script>
