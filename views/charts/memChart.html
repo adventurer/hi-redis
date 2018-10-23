@@ -1,0 +1,77 @@
+<div class="row">
+    <div class="col-12">
+        <div id="command" style="height:400px;"></div>
+    </div>
+</div>
+
+<script>
+(function(){
+    var myChart = echarts.init(document.getElementById('command'));
+    var time_data = []
+    var in_data = []
+    var time = new Date();
+    for (index = 0; index < 30; index++) {
+        time_data[index] = time.getMinutes().toString()+":"+time.getSeconds().toString()
+        in_data[index] = 0
+    }
+
+    option = {
+        legend: {
+            data:['内存用量']
+        },
+        tooltip : {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#6a7985'
+                }
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap : false,
+            data: time_data
+        },
+        yAxis : [
+            {
+                type : 'value',
+                axisLabel: {
+                    formatter: '{value} MB'
+                },
+            }
+        ],
+        series: [{
+            name:"内存用量",
+            type: 'line',
+            smooth: true,
+            data: in_data
+        }]
+    };
+    
+    myChart.setOption(option)
+    conn = new WebSocket("ws://" + document.location.host + "/echo");
+    conn.onclose = function (evt) {
+        console.log("close")
+    };
+    conn.onmessage = function (evt) {
+        json = evt.data.toString()
+        data = JSON.parse(json)
+        data = jQuery.parseJSON(data)
+
+        var time = new Date();
+        time_data.shift()
+        time_data.push(time.getMinutes().toString()+":"+time.getSeconds().toString())
+        in_data.shift()
+        in_data.push((data.Memory.used_memory/1024/1024).toFixed(2))
+        myChart.setOption(option)
+
+    };
+})()
+</script>

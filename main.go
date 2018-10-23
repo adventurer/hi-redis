@@ -15,6 +15,21 @@ import (
 func main() {
 	go websockTask()
 	beego.SetStaticPath("/assets", "static")
+	beego.SetStaticPath("/", "dist")
+
+	// go func() {
+	// 	var handel *exec.Cmd
+	// 	cmd := "serve -s dist"
+	// 	handel = exec.Command("/bin/sh", "-c", cmd)
+	// 	output, err := handel.Output()
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	log.Println(string(output))
+	// }()
+	beego.SetLevel(beego.LevelDebug)
+	// beego.BeeLogger.DelLogger("console")
+
 	beego.Run()
 }
 
@@ -25,9 +40,6 @@ func websockTask() {
 		DB:       0,  // use default DB
 	})
 
-	log.Println("run task")
-	// println("__________________")
-	// log.Printf("%#v", info_result)
 	tk1 := toolbox.NewTask("tk1", "0/3 * * * * *", func() error {
 		info, err := client.Info().Result()
 		if err != nil {
@@ -35,7 +47,6 @@ func websockTask() {
 		}
 		info_result := models.UnixConfigToMap(info)
 		Json, _ := json.Marshal(info_result)
-		// msg := Message{Message: string(Json)}
 		controllers.Broadcast <- string(Json)
 		return nil
 	})

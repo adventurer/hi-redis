@@ -1,0 +1,109 @@
+<div class="row clearfix mt-5">
+    <div class="col-3">
+        <div class="card">
+            <div class="card-body currency_state">
+                <div class="icon"><img src="../assets/images/crypto/XRP.svg" alt="Monero"></div>
+                <div class="content">
+                    <div class="text">used_cpu_sys/used_cpu_user</div>
+                    <h5 class="number"><span id="cpu_sys">0.00</span>/<span id="cpu_user">0.00</span></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card">
+            <div class="card-body currency_state">
+                <div class="icon"><img src="../assets/images/crypto/XRP.svg" alt="Monero"></div>
+                <div class="content">
+                    <div class="text">total_system_memory_human</div>
+                    <h5 class="number"><span id="sys_mem">0.00</span></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card">
+            <div class="card-body currency_state">
+                <div class="icon"><img src="../assets/images/crypto/XRP.svg" alt="Monero"></div>
+                <div class="content">
+                    <div class="text">total_commands_processed/second</div>
+                    <h5 class="number"><span id="command_cnt">0.00</span></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card">
+            <div class="card-body currency_state">
+                <div class="icon"><img src="../assets/images/crypto/XRP.svg" alt="Monero"></div>
+                <div class="content">
+                    <div class="text">hits ratio</div>
+                    <h5 class="number"><span id="hit_ratio">0.00</span>%</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card">
+            <div class="card-body currency_state">
+                <div class="icon"><img src="../assets/images/crypto/XRP.svg" alt="Monero"></div>
+                <div class="content">
+                    <div class="text">blocked/connected</div>
+                    <h5 class="number"><span id="client">0.00/0.00</span></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card">
+            <div class="card-body currency_state">
+                <div class="icon"><img src="../assets/images/crypto/XRP.svg" alt="Monero"></div>
+                <div class="content">
+                    <div class="text">version/updays</div>
+                    <h5 class="number"><span id="version">0.00</span></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var cpuSysTemp = {'cpu_sys':'init','cpu_user':'init','command_cnt':'init'}
+
+    conn = new WebSocket("ws://" + document.location.host + "/echo");
+    conn.onclose = function (evt) {
+        console.log("close")
+    };
+    conn.onmessage = function (evt) {
+        json = evt.data.toString()
+        data = JSON.parse(json)
+        data = jQuery.parseJSON(data)
+
+        // console.log($("#cpu_info")[0].innerText)
+        var x = function(key,ret) {
+            console.log(cpuSysTemp[key])
+            console.log(ret)
+            if (cpuSysTemp[key] == 'init') {
+                cpuSysTemp[key] = ret
+                return ret 
+            }else{
+                c = (ret - cpuSysTemp[key]).toFixed(2)
+                cpuSysTemp[key] = ret
+                return c
+            }
+        }
+        // $("#cpu_info")[0].innerText = ret - Number($("#cpu_info")[0].innerText)
+        $("#cpu_sys")[0].innerText = x('cpu_sys',data.CPU.used_cpu_sys)
+        $("#cpu_user")[0].innerText = x('cpu_user',data.CPU.used_cpu_user)
+        $("#command_cnt")[0].innerText = x('command_cnt',data.Stats.total_commands_processed)
+        $("#sys_mem")[0].innerText = data.Memory.total_system_memory_human
+        $("#hit_ratio")[0].innerText = Number(data.Stats.keyspace_hits)/Number(data.Stats.keyspace_hits)+Number(data.Stats.keyspace_misses)/100
+
+        $("#client")[0].innerText = data.Clients.blocked_clients+"/"+data.Clients.connected_clients
+        $("#version")[0].innerText = data.Server.redis_version+"/"+data.Server.uptime_in_days
+
+    }; 
+
+})()
+</script>

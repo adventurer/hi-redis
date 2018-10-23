@@ -453,7 +453,7 @@
         </div>
     </div>
 
-    {{template "menu.tpl" .}}
+    {{template "menu.html" .}}
 
     <div class="page">
         <div class="container">
