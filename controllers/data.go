@@ -15,7 +15,7 @@ type Data struct {
 
 func (c *MainController) Data() {
 	client := redis.NewClient(&redis.Options{
-		Addr:     models.AppConfig.DBIp + models.AppConfig.DBPort,
+		Addr:     models.AppConfig.DBIp + ":" + models.AppConfig.DBPort,
 		Password: models.AppConfig.DBAuth,
 		DB:       0, // use default DB
 	})
@@ -47,7 +47,7 @@ func (c *MainController) Key() {
 	log.Println(key)
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     models.AppConfig.DBIp + models.AppConfig.DBPort,
+		Addr:     models.AppConfig.DBIp + ":" + models.AppConfig.DBPort,
 		Password: models.AppConfig.DBAuth,
 		DB:       0, // use default DB
 	})

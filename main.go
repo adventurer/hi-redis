@@ -37,7 +37,7 @@ func main() {
 
 func websockTask() {
 	client := redis.NewClient(&redis.Options{
-		Addr:     models.AppConfig.DBIp + models.AppConfig.DBPort,
+		Addr:     models.AppConfig.DBIp + ":" + models.AppConfig.DBPort,
 		Password: models.AppConfig.DBAuth,
 		DB:       0, // use default DB
 	})
