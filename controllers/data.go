@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"hi-redis/models"
 	"log"
 
 	"github.com/go-redis/redis"
@@ -14,9 +15,9 @@ type Data struct {
 
 func (c *MainController) Data() {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "192.168.3.208:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     models.AppConfig.DBIp + models.AppConfig.DBPort,
+		Password: models.AppConfig.DBAuth,
+		DB:       0, // use default DB
 	})
 
 	var data = make([]Data, 0)
@@ -46,9 +47,9 @@ func (c *MainController) Key() {
 	log.Println(key)
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     "192.168.3.208:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     models.AppConfig.DBIp + models.AppConfig.DBPort,
+		Password: models.AppConfig.DBAuth,
+		DB:       0, // use default DB
 	})
 
 	var ret []byte

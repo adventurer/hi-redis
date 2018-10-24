@@ -16,6 +16,8 @@ func main() {
 	go websockTask()
 	beego.SetStaticPath("/assets", "static")
 	beego.SetStaticPath("/", "dist")
+	beego.SetStaticPath("/js", "dist/js")
+	beego.SetStaticPath("/css", "dist/css")
 
 	// go func() {
 	// 	var handel *exec.Cmd
@@ -35,9 +37,9 @@ func main() {
 
 func websockTask() {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "192.168.3.208:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     models.AppConfig.DBIp + models.AppConfig.DBPort,
+		Password: models.AppConfig.DBAuth,
+		DB:       0, // use default DB
 	})
 
 	tk1 := toolbox.NewTask("tk1", "0/3 * * * * *", func() error {
