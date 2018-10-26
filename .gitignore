@@ -1,3 +1,4 @@
 hi-redis
 .vscode/*
 .DS_Store
+config.json
