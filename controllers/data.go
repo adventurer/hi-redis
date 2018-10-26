@@ -12,6 +12,7 @@ import (
 type Data struct {
 	Type string
 	Val  string
+	Ttl  float64
 }
 
 func (c *MainController) Data() {
@@ -25,8 +26,9 @@ func (c *MainController) Data() {
 	}
 
 	for _, v := range keys {
-		t, _ := models.Client.Type(v).Result()
-		d := Data{Type: t, Val: v}
+		_type, _ := models.Client.Type(v).Result()
+		ttl, _ := models.Client.TTL(v).Result()
+		d := Data{Type: _type, Val: v, Ttl: ttl.Seconds()}
 		data = append(data, d)
 	}
 
