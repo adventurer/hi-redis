@@ -12,4 +12,6 @@ func init() {
 	beego.Router("/welcome", &controllers.MainController{}, "*:Welcome")
 	beego.Router("/data", &controllers.MainController{}, "*:Data")
 	beego.Router("/get", &controllers.MainController{}, "*:Key")
+	beego.Router("/cmd", &controllers.MainController{}, "*:Command")
+
 }

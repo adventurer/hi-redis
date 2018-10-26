@@ -4,14 +4,18 @@ $(function() {
     'use strict';
 
     $(function () {
-        $('.js-basic-example').DataTable();
+        $('.js-basic-example').DataTable({
+            "lengthChange": false,
+            "ordering":  false
+        });
 
         //Exportable table
         $('.js-exportable').DataTable({
             dom: 'Bfrtip',
             buttons: [
                 'copy', 'csv', 'excel', 'pdf', 'print'
-            ]
+            ],
+            "lengthChange": false
         });
     });
 

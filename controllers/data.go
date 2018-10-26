@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"hi-redis/models"
 	"log"
+	"strings"
 
 	"github.com/go-redis/redis"
 )
@@ -14,20 +15,17 @@ type Data struct {
 }
 
 func (c *MainController) Data() {
-	client := redis.NewClient(&redis.Options{
-		Addr:     models.AppConfig.DBIp + ":" + models.AppConfig.DBPort,
-		Password: models.AppConfig.DBAuth,
-		DB:       0, // use default DB
-	})
+
+	key := c.GetString("key")
 
 	var data = make([]Data, 0)
-	keys, _, err := client.Scan(0, "*", 3000).Result()
+	keys, _, err := models.Client.Scan(0, key+"*", 3000).Result()
 	if err != nil {
 		panic(err)
 	}
 
 	for _, v := range keys {
-		t, _ := client.Type(v).Result()
+		t, _ := models.Client.Type(v).Result()
 		d := Data{Type: t, Val: v}
 		data = append(data, d)
 	}
@@ -44,44 +42,37 @@ func (c *MainController) Key() {
 		c.Ctx.WriteString("key is empty")
 		return
 	}
-	log.Println(key)
-
-	client := redis.NewClient(&redis.Options{
-		Addr:     models.AppConfig.DBIp + ":" + models.AppConfig.DBPort,
-		Password: models.AppConfig.DBAuth,
-		DB:       0, // use default DB
-	})
 
 	var ret []byte
-	t, _ := client.Type(key).Result()
+	t, _ := models.Client.Type(key).Result()
 	switch t {
 	case "string":
-		result, err := client.Get(key).Result()
+		result, err := models.Client.Get(key).Result()
 		if err != nil {
 			log.Println(err)
 		}
 		ret, _ = json.Marshal(result)
 
 	case "hash":
-		result, err := client.HGetAll(key).Result()
+		result, err := models.Client.HGetAll(key).Result()
 		if err != nil {
 			log.Println(err)
 		}
 		ret, _ = json.Marshal(result)
 	case "set":
-		result, err := client.SMembers(key).Result()
+		result, err := models.Client.SMembers(key).Result()
 		if err != nil {
 			log.Println(err)
 		}
 		ret, _ = json.Marshal(result)
 	case "list":
 		var ret_tmp []string
-		_len, err := client.LLen(key).Result()
+		_len, err := models.Client.LLen(key).Result()
 		if err != nil {
 			log.Println(err)
 		}
 		for index := 0; index < int(_len); index++ {
-			_ret, err := client.LIndex(key, int64(index)).Result()
+			_ret, err := models.Client.LIndex(key, int64(index)).Result()
 			if err != nil {
 				log.Println(err)
 			}
@@ -92,4 +83,36 @@ func (c *MainController) Key() {
 	}
 
 	c.Ctx.WriteString(string(ret))
+}
+
+func (c *MainController) Command() {
+	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
+	input := c.GetString("cmd")
+	if input == "" {
+		c.Ctx.WriteString("input is empty")
+		return
+	}
+
+	args := []interface{}{}
+	inputArr := strings.Split(input, " ")
+	for _, v := range inputArr {
+		args = append(args, v)
+	}
+	log.Println(args...)
+	cmd := redis.NewStringCmd(args...)
+	log.Println(cmd)
+	err := models.Client.Process(cmd)
+	if err != nil {
+		c.Ctx.WriteString("err on process:" + err.Error())
+		return
+	}
+	t, err := cmd.Result()
+	if err != nil {
+		c.Ctx.WriteString("err on result:" + err.Error())
+		return
+	}
+
+	ret, _ := json.Marshal(t)
+	c.Ctx.WriteString(string(ret))
+
 }

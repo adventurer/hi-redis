@@ -1,6 +1,6 @@
 {
 	"Listen": ":8088",
 	"DBIp":   "192.168.3.208",
-	"DBPort": "3606",
-	"DBAuth": "root"
+	"DBPort": "6379",
+	"DBAuth": ""
 }
